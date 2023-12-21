@@ -1,18 +1,21 @@
+using Microsoft.Extensions.Primitives;
+using System.IO;
+
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 
 app.Run(async (HttpContext context) =>
 {
-    if (1 == 1)
+    StreamReader reader = new StreamReader(context.Request.Body);
+    string body = await reader.ReadToEndAsync();
+
+    Dictionary<string, StringValues> queryDict = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(body);
+
+    if (queryDict.ContainsKey("firstName"))
     {
-        context.Response.StatusCode = 200;
+        string firstName = queryDict["firstName"][0];
+        await context.Response.WriteAsync(firstName);
     }
-    else
-    {
-        context.Response.StatusCode = 400;
-    }
-    await context.Response.WriteAsync("Hello");
-    await context.Response.WriteAsync(" World");
 });
 
 app.Run();
