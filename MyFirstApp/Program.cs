@@ -1,13 +1,20 @@
+using Microsoft.Extensions.Primitives;
+using System.IO;
+
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 
 app.Run(async (HttpContext context) =>
 {
-    context.Response.Headers["Content-type"] = "text/html";
-    if (context.Request.Headers.ContainsKey("User-Agent"))
+    StreamReader reader = new StreamReader(context.Request.Body);
+    string body = await reader.ReadToEndAsync();
+
+    Dictionary<string, StringValues> queryDict = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(body);
+
+    if (queryDict.ContainsKey("firstName"))
     {
-        string userAgent = context.Request.Headers["User-Agent"];
-        await context.Response.WriteAsync($"<p>{userAgent}</p>");
+        string firstName = queryDict["firstName"][0];
+        await context.Response.WriteAsync(firstName);
     }
 });
 
